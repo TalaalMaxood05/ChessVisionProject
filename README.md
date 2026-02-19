@@ -52,27 +52,6 @@ This project uses two main datasets for training and evaluation:
 - The `.gitignore` file is configured to exclude large dataset files
 - See `data/README.md` for detailed dataset instructions
 
-## Usage
-
-### Running the Complete Pipeline
-
-To process a chess board image through the complete pipeline:
-
-```bash
-python src/pipeline.py --image photo.jpg
-```
-
-### Command-Line Options
-
-- `--image`: Path to the input chess board image (required)
-- `--model`: Path to the trained classification model (default: `models/best_model.pth`)
-- `--output`: Path to save output results (optional)
-
-### Example
-
-```bash
-python src/pipeline.py --image examples/game1.jpg --model models/best_model.pth --output results/game1_output.json
-```
 
 ## Project Structure
 
@@ -106,15 +85,6 @@ The project uses a simple branching model:
 - `member-b` - Sensitivity experiments
 - `member-c` - Piece classifier development
 
-### Contributing
-
-1. Create a branch for your work
-2. Make changes and commit regularly
-3. Open a Pull Request into `main`
-4. At least one other team member reviews the PR
-5. Merge after approval
-
-This workflow prevents breaking changes and maintains code quality.
 
 ## Pipeline Stages
 
