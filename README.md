@@ -26,8 +26,8 @@ pip install -r requirements.txt
 ### Required Packages
 The following packages will be installed:
 - opencv-python==4.9.0.80 (Computer vision operations)
-- torch==2.2.0 (Deep learning framework)
-- torchvision==0.17.0 (Vision utilities for PyTorch)
+- torch==2.6.0 (Deep learning framework)
+- torchvision==0.21.0 (Vision utilities for PyTorch)
 - numpy==1.26.4 (Numerical computing)
 - python-chess==1.999 (Chess logic and notation)
 - stockfish==3.28.0 (Chess engine integration)
