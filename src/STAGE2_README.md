@@ -53,9 +53,11 @@ python stage2_wrap.py --image data/input.jpg --corners data/corners.json --save_
 
 ## Ground Truth Corners
 The corners below are manually mapped for testing for chess_img.jpg
+```
 [
 [7, 129],   # TL
 [700, 62],  # TR
 [1014, 505],  # BR
 [100, 650]    # BL
 ]
+```
