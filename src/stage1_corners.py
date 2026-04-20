@@ -5,6 +5,7 @@ Detects the four outer corners of a chessboard from an input image
 using Hough line detection and geometric intersection.
 """
 
+import random
 import cv2
 import numpy as np
 
@@ -68,18 +69,123 @@ class Stage1CornerDetection:
             gray: grayscale image
 
         Returns:
-            lines: output from cv2.HoughLinesP
+            lines: output as cv2.HoughLinesP
         """
         edges = self.detect_edges(gray)
-        lines = cv2.HoughLinesP(
-            edges,
-            rho=1,
-            theta=np.pi / 180,
-            threshold=self.hough_threshold,
-            minLineLength=self.min_line_length,
-            maxLineGap=self.max_line_gap
+
+        points = np.argwhere(edges > 0)
+
+        if len(points) == 0:
+            return None
+
+        h, w = edges.shape
+        max_rho = int(np.ceil(np.sqrt(h*h + w*w)))
+
+
+
+        theta_vals = np.deg2rad(np.arange(0, 180))
+        cos_vals = np.cos(theta_vals)
+        sin_vals = np.sin(theta_vals)
+
+        accumulator = np.zeros(
+            (2 * max_rho + 1, len(theta_vals)),
+            dtype=np.int32
         )
-        return lines
+
+        edge_points = [(int(x), int(y)) for y, x in points]
+        random.shuffle(edge_points)
+
+        active_points = set(edge_points)
+        detected_lines = []
+
+        for x, y in edge_points:
+
+            if (x, y) not in active_points:
+                continue
+
+
+
+            for theta_idx in range(len(theta_vals)):
+
+                rho = x * cos_vals[theta_idx] + y * sin_vals[theta_idx]
+                rho_idx = int(round(rho)) + max_rho
+
+                accumulator[rho_idx, theta_idx] += 1
+
+                if accumulator[rho_idx, theta_idx] >= self.hough_threshold:
+
+                    rho_val = rho_idx - max_rho
+
+                    theta = theta_vals[theta_idx]
+
+
+                    cos_t = np.cos(theta)
+                    sin_t = np.sin(theta)
+
+                    line_points = []
+
+                    for px, py in active_points:
+
+                        dist = abs(px*cos_t + py*sin_t - rho_val)
+
+                        if dist < 2.0:
+                            line_points.append((px, py))
+
+                    if len(line_points) < self.min_line_length:
+                        continue
+
+                    projections = []
+
+                    dx = -sin_t
+
+                    dy = cos_t
+
+                    for px, py in line_points:
+
+                        t = px*dx + py*dy
+                        projections.append((t, px, py))
+
+                    if len(projections) == 0:
+                        continue
+
+                    projections.sort()
+
+                    best_segment = []
+                    current_segment = [projections[0]]
+
+                    for i in range(1, len(projections)):
+
+                        if abs(projections[i][0] - projections[i-1][0]) <= self.max_line_gap:
+                            current_segment.append(projections[i])
+
+                        else:
+
+                            if len(current_segment) > len(best_segment):
+                                best_segment = current_segment
+                            current_segment = [projections[i]]
+
+                    if len(current_segment) > len(best_segment):
+                        best_segment = current_segment
+
+                    if len(best_segment) >= self.min_line_length:
+
+                        _, x1, y1 = best_segment[0]
+                        _, x2, y2 = best_segment[-1]
+
+                        detected_lines.append(
+                            np.array([[x1, y1, x2, y2]])
+                        )
+
+                        for _, px, py in best_segment:
+                            if (px, py) in active_points:
+                                active_points.remove((px, py))
+
+                        accumulator[rho_idx, theta_idx] = 0
+
+        if len(detected_lines) == 0:
+            return None
+
+        return np.array(detected_lines)
 
 
     # 4. SPLIT LINES BY ORIENTATION
